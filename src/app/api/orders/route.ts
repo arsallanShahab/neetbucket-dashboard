@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     let diffInSales = thisWeekSales - lastWeekSales;
     let percentageChange = 0;
     if (lastWeekSales !== 0) {
-      percentageChange = (diffInSales / lastWeekSales).toFixed(2) * 100;
+      percentageChange = Number((diffInSales / lastWeekSales).toFixed(2)) * 100;
     }
     console.log(thisWeeksOrders, "thisWeeksOrders");
     console.log(lastWeeksOrders, "lastWeeksOrders");
