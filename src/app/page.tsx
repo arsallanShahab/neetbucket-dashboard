@@ -250,7 +250,7 @@ export default function Dashboard() {
               className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
             />
           </div>
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -274,7 +274,7 @@ export default function Dashboard() {
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div
@@ -410,15 +410,9 @@ export default function Dashboard() {
                         <TableRow>
                           <TableHead>S.No </TableHead>
                           <TableHead>Customer</TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Chapters
-                          </TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Status
-                          </TableHead>
-                          <TableHead className="hidden md:table-cell">
-                            Date
-                          </TableHead>
+                          <TableHead>Chapters</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -449,12 +443,12 @@ export default function Dashboard() {
                                 {order?.user_email}
                               </div>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell max-w-xs">
+                            <TableCell className="max-w-xs">
                               {order?.items
                                 ?.map((note) => note.title)
                                 .join(", ")}
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell>
                               <Badge
                                 className="text-xs"
                                 variant={
@@ -466,7 +460,7 @@ export default function Dashboard() {
                                 {order?.payment_status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell>
                               {dayjs(order?.created_at).format("YYYY-MM-DD")}
                             </TableCell>
                             <TableCell className="text-right">
@@ -492,21 +486,11 @@ export default function Dashboard() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Customer</TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Chapters
-                          </TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Payment Status
-                          </TableHead>
-                          <TableHead className="hidden md:table-cell">
-                            Delivery Status
-                          </TableHead>
-                          <TableHead className="hidden md:table-cell">
-                            Address
-                          </TableHead>
-                          <TableHead className="hidden md:table-cell">
-                            Date
-                          </TableHead>
+                          <TableHead>Chapters</TableHead>
+                          <TableHead>Payment Status</TableHead>
+                          <TableHead>Delivery Status</TableHead>
+                          <TableHead>Address</TableHead>
+                          <TableHead>Date</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -536,12 +520,12 @@ export default function Dashboard() {
                                 {order?.user_email}
                               </div>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell max-w-xs">
+                            <TableCell className="max-w-xs">
                               {order?.items
                                 ?.map((note) => note.title)
                                 .join(", ")}
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell>
                               <Badge
                                 className="text-xs"
                                 variant={
@@ -553,7 +537,7 @@ export default function Dashboard() {
                                 {order?.payment_status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell>
                               <Badge
                                 className="text-xs"
                                 variant={
@@ -565,12 +549,12 @@ export default function Dashboard() {
                                 {order?.delivery.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell>
                               {order?.shipping_details.address},{" "}
                               {order?.shipping_details.city},{" "}
                               {order?.shipping_details.state}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell>
                               {dayjs(order?.created_at).format("YYYY-MM-DD")}
                             </TableCell>
                             <TableCell className="text-right">
