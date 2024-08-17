@@ -555,7 +555,9 @@ export default function Dashboard() {
                               {order?.shipping_details.state}
                             </TableCell>
                             <TableCell>
-                              {dayjs(order?.created_at).format("YYYY-MM-DD")}
+                              {dayjs(order?.created_at).format(
+                                "hh:mm A - MMMM DD, YYYY"
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               ₹{order?.total_amount}
