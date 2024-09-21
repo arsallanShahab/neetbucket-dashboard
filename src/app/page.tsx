@@ -1,25 +1,20 @@
 "use client";
 
 import {
-  ChevronLeft,
-  ChevronRight,
   Copy,
-  CreditCard,
-  File,
   Home,
   LineChart,
   ListFilter,
+  Loader2,
   MoreVertical,
   Package,
   Package2,
   PanelLeft,
   Search,
-  Settings,
   ShoppingCart,
   Truck,
   Users2,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 
@@ -45,20 +40,22 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Table,
   TableBody,
@@ -78,6 +75,8 @@ import { IHardCopyOrder, ISoftCopyOrder } from "@/types/orders";
 import dayjs from "dayjs";
 
 export default function Dashboard() {
+  const [loading, setLoading] = React.useState(true);
+  const [updatingOrder, setUpdatingOrder] = React.useState(false);
   const [softcopy, setSoftcopy] = React.useState<ISoftCopyOrder[]>([]);
   const [hardcopy, setHardcopy] = React.useState<IHardCopyOrder[]>([]);
   const [stats, setStats] = React.useState<{
@@ -96,6 +95,8 @@ export default function Dashboard() {
   const [selectedOrder, setSelectedOrder] = React.useState<
     ISoftCopyOrder | IHardCopyOrder | null
   >(null);
+
+  const [sheetOpen, setSheetOpen] = React.useState(false);
 
   const handleOrderSelect = (order: ISoftCopyOrder | IHardCopyOrder) => {
     setSelectedOrder(order);
@@ -123,6 +124,64 @@ export default function Dashboard() {
     setActiveFilter(null);
   };
 
+  const handleUpdateToTransit = async (orderId: string | undefined) => {
+    if (orderId === null || typeof orderId === "undefined") return;
+    setUpdatingOrder(true);
+    try {
+      const res = await fetch("/api/shipping/status/in-transit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+    } catch (error) {
+      console.error(error);
+    }
+    setUpdatingOrder(false);
+    setSheetOpen(false);
+    setSelectedOrder(null);
+  };
+  const handleUpdateToDelivered = async (orderId: string | undefined) => {
+    if (orderId === null || typeof orderId === "undefined") return;
+    setUpdatingOrder(true);
+    try {
+      const res = await fetch("/api/shipping/status/delivered", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+    } catch (error) {
+      console.error(error);
+    }
+    setUpdatingOrder(false);
+    setSheetOpen(false);
+    setSelectedOrder(null);
+  };
+  const handleUpdateToPending = async (orderId: string | undefined) => {
+    if (orderId === null || typeof orderId === "undefined") return;
+    setUpdatingOrder(true);
+    try {
+      const res = await fetch("/api/shipping/status/pending", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+    } catch (error) {
+      console.error(error);
+    }
+    setUpdatingOrder(false);
+    setSheetOpen(false);
+    setSelectedOrder(null);
+  };
+
   React.useEffect(() => {
     fetch(`/api/orders?filter=${activeFilter}`)
       .then((res) => res.json())
@@ -138,8 +197,9 @@ export default function Dashboard() {
           thisMonthSales: data.data.thisMonthSales,
         });
       })
-      .catch((error) => console.error(error));
-  }, [activeFilter]);
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
+  }, [activeFilter, updatingOrder, selectedOrder]);
 
   console.log(softcopy, "softcopy");
   return (
@@ -276,15 +336,10 @@ export default function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu> */}
         </header>
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-          <div
-            className={cn(
-              "grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2",
-              selectedOrder ? "lg:col-span-2" : "lg:col-span-3"
-            )}
-          >
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0">
+          <div className={cn("grid items-start gap-4 md:gap-8")}>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
+              <Card className="" x-chunk="dashboard-05-chunk-0">
                 <CardHeader className="pb-3">
                   <CardTitle>Your Orders</CardTitle>
                   <CardDescription className="text-balance max-w-lg leading-relaxed">
@@ -396,8 +451,8 @@ export default function Dashboard() {
                   </Button> */}
                 </div>
               </div>
-              <TabsContent value="softcopy">
-                <Card x-chunk="dashboard-05-chunk-3">
+              <TabsContent value="softcopy" className="w-full">
+                <Card x-chunk="dashboard-05-chunk-3" className="w-full">
                   <CardHeader className="px-7">
                     <CardTitle>Orders</CardTitle>
                     <CardDescription>
@@ -405,26 +460,32 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Table>
+                    <Table className="overflow-x-scroll w-full">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>S.No </TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            S.No{" "}
+                          </TableHead>
                           <TableHead>Customer</TableHead>
-                          <TableHead>Chapters</TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Chapters
+                          </TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
                         </TableRow>
                       </TableHeader>
-                      <TableBody>
+                      <TableBody className="overflow-x-scroll">
                         {softcopy?.map((order, i) => (
                           <TableRow
                             key={order?.order_id}
                             onClick={() => {
                               if (selectedOrder?.order_id === order?.order_id) {
                                 handleOrderDeselect();
+                                setSheetOpen(false);
                               } else {
                                 handleOrderSelect(order);
+                                setSheetOpen(true);
                               }
                             }}
                             style={{
@@ -434,7 +495,9 @@ export default function Dashboard() {
                                   : "transparent",
                             }}
                           >
-                            <TableCell>{i + 1}</TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              {i + 1}
+                            </TableCell>
                             <TableCell>
                               <div className="font-medium">
                                 {order?.user_name}
@@ -443,7 +506,7 @@ export default function Dashboard() {
                                 {order?.user_email}
                               </div>
                             </TableCell>
-                            <TableCell className="max-w-xs">
+                            <TableCell className="max-w-xs hidden sm:table-cell">
                               {order?.items
                                 ?.map((note) => note.title)
                                 .join(", ")}
@@ -491,9 +554,15 @@ export default function Dashboard() {
                           <TableHead>Chapters</TableHead>
                           <TableHead>Payment Status</TableHead>
                           <TableHead>Delivery Status</TableHead>
-                          <TableHead>Address</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Address
+                          </TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Date
+                          </TableHead>
+                          <TableHead className="text-right hidden sm:table-cell">
+                            Amount
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -503,8 +572,10 @@ export default function Dashboard() {
                             onClick={() => {
                               if (selectedOrder?.order_id === order?.order_id) {
                                 handleOrderDeselect();
+                                setSheetOpen(false);
                               } else {
                                 handleOrderSelect(order);
+                                setSheetOpen(true);
                               }
                             }}
                             style={{
@@ -551,17 +622,17 @@ export default function Dashboard() {
                                 {order?.delivery.status}
                               </Badge>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden sm:table-cell">
                               {order?.shipping_details.address},{" "}
                               {order?.shipping_details.city},{" "}
                               {order?.shipping_details.state}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden sm:table-cell">
                               {dayjs(order?.created_at).format(
                                 "hh:mm A - MMMM DD, YYYY"
                               )}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right hidden sm:table-cell">
                               ₹{order?.total_amount}
                             </TableCell>
                           </TableRow>
@@ -573,9 +644,33 @@ export default function Dashboard() {
               </TabsContent>
             </Tabs>
           </div>
-          {selectedOrder && (
-            <div className="sticky top-5">
-              <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
+
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+              <div className="flex items-center gap-2 text-base">
+                <span className="sr-only">Loading...</span>
+                <Loader2 className="h-10 w-10 animate-spin" />
+              </div>
+            </div>
+          )}
+          <Sheet
+            defaultOpen={sheetOpen}
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+          >
+            <SheetTrigger asChild>
+              <Button variant="outline" className="sr-only">
+                Open
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-xl w-full p-0 sm:p-5">
+              <SheetHeader className="text-left pt-5 pl-5">
+                <SheetTitle>Order Summary</SheetTitle>
+              </SheetHeader>
+              <Card
+                className="overflow-hidden mt-5 shadow-none border-none"
+                x-chunk="dashboard-05-chunk-4"
+              >
                 <CardHeader className="flex flex-row items-start bg-muted/50">
                   <div className="grid gap-0.5">
                     <CardTitle className="group flex items-center gap-2 text-lg">
@@ -591,7 +686,9 @@ export default function Dashboard() {
                     </CardTitle>
                     <CardDescription>
                       Date:{" "}
-                      {dayjs(selectedOrder?.created_at).format("MMMM DD, YYYY")}
+                      {dayjs(selectedOrder?.created_at).format(
+                        "MMMM DD, YYYY - hh:mm A"
+                      )}
                     </CardDescription>
                   </div>
                   <div className="ml-auto flex items-center gap-1">
@@ -641,11 +738,11 @@ export default function Dashboard() {
                     <ul className="grid gap-3">
                       <li className="flex items-center justify-between">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span>{selectedOrder.total_amount}</span>
+                        <span>{selectedOrder?.total_amount}</span>
                       </li>
                       <li className="flex items-center justify-between font-semibold">
                         <span className="text-muted-foreground">Total</span>
-                        <span>{selectedOrder.total_amount}</span>
+                        <span>{selectedOrder?.total_amount}</span>
                       </li>
                     </ul>
                   </div>
@@ -714,6 +811,46 @@ export default function Dashboard() {
                       </div>
                     </dl>
                   </div>
+                  {selectedOrder?.order_type === "hardcopy" && (
+                    <>
+                      <Separator className="my-4" />
+                      <h3 className="font-semibold">Current Shipping Status</h3>
+                      <p className="text-muted-foreground">
+                        {(selectedOrder as IHardCopyOrder)?.delivery?.status}
+                      </p>
+                      <Separator className="my-4" />
+                      <h3 className="font-semibold">Update Shipping Status</h3>
+                      <div className="grid grid-cols-3 gap-3 mt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleUpdateToPending(selectedOrder?.order_id)
+                          }
+                        >
+                          Pending
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleUpdateToTransit(selectedOrder?.order_id)
+                          }
+                        >
+                          In Transit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleUpdateToDelivered(selectedOrder?.order_id)
+                          }
+                        >
+                          Delivered
+                        </Button>
+                      </div>
+                    </>
+                  )}
                   {/* <Separator className="my-4" />
                   <div className="grid gap-3">
                     <div className="font-semibold">Payment Information</div>
@@ -758,8 +895,21 @@ export default function Dashboard() {
                   </Pagination>
                 </CardFooter> */}
               </Card>
-            </div>
-          )}
+              <SheetFooter className="mt-5 px-5">
+                <SheetClose asChild>
+                  <Button
+                    type="submit"
+                    onClick={() => {
+                      setSheetOpen(false);
+                      setSelectedOrder(null);
+                    }}
+                  >
+                    close
+                  </Button>
+                </SheetClose>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </main>
       </div>
     </div>
